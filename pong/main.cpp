@@ -3,15 +3,22 @@
 //linker::input::additional dependensies Msimg32.lib; Winmm.lib
 
 #include "windows.h"
+#include "math.h"
+#include <ctime>
+#include <cstdlib>
 
 // секция данных игры  
 typedef struct {
     float x, y, width, height, rad, dx, dy, speed;
+    bool active;
     HBITMAP hBitmap;//хэндл к спрайту шарика 
 } sprite;
 
+const int horizontalBlockCount = 10;
+const int verticalBlockCount = 5;
+
 sprite racket;//ракетка игрока
-sprite enemy;//ракетка противника
+sprite blocks[horizontalBlockCount][verticalBlockCount];
 sprite ball;//шарик
 
 struct {
@@ -29,28 +36,42 @@ HBITMAP hBack;// хэндл для фонового изображения
 
 //cекция кода
 
+const int fps = 120;
+const int debugSpeed = 100;
+
 void InitGame()
 {
+    srand(time(0));
+
     //в этой секции загружаем спрайты с помощью функций gdi
     //пути относительные - файлы должны лежать рядом с .exe 
     //результат работы LoadImageA сохраняет в хэндлах битмапов, рисование спрайтов будет произовдиться с помощью этих хэндлов
     ball.hBitmap = (HBITMAP)LoadImageA(NULL, "ball.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
     racket.hBitmap = (HBITMAP)LoadImageA(NULL, "racket.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-    enemy.hBitmap = (HBITMAP)LoadImageA(NULL, "racket_enemy.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
     hBack = (HBITMAP)LoadImageA(NULL, "back.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
     //------------------------------------------------------
 
     racket.width = 300;
     racket.height = 50;
-    racket.speed = 30;//скорость перемещения ракетки
+    racket.speed = 1800. / fps * debugSpeed;//скорость перемещения ракетки
     racket.x = window.width / 2.;//ракетка посередине окна
     racket.y = window.height - racket.height;//чуть выше низа экрана - на высоту ракетки
 
-    enemy.x = racket.x;//х координату оппонета ставим в ту же точку что и игрока
+    for (int x = 0; x < horizontalBlockCount; x++) 
+    {
+        for (int y = 0; y < verticalBlockCount; y++)
+        {
+            blocks[x][y].width = window.width / horizontalBlockCount;
+            blocks[x][y].height = window.height / verticalBlockCount / 3;
+            blocks[x][y].x = blocks[x][y].width * x;
+            blocks[x][y].y = blocks[x][y].height * y + window.height / 3;
+            blocks[x][y].active = true;
+        }
+    }
 
-    ball.dy = (rand() % 65 + 35) / 100.;//формируем вектор полета шарика
-    ball.dx = -(1 - ball.dy);//формируем вектор полета шарика
-    ball.speed = 11;
+     ball.dy = -(rand() % 65 + 35) / 100.;//формируем вектор полета шарика
+    ball.dx = (rand() % 90 + 10) / 100. * pow(-1, rand());
+    ball.speed = 660. / fps * debugSpeed;
     ball.rad = 20;
     ball.x = racket.x;//x координата шарика - на середие ракетки
     ball.y = racket.y - ball.rad;//шарик лежит сверху ракетки
@@ -125,21 +146,19 @@ void ShowBitmap(HDC hDC, int x, int y, int x1, int y1, HBITMAP hBitmapBall, bool
     DeleteDC(hMemDC); // Удаляем контекст памяти
 }
 
-void ShowRacketAndBall()
+void ShowRacketBallAndBlocks()
 {
     ShowBitmap(window.context, 0, 0, window.width, window.height, hBack);//задний фон
     ShowBitmap(window.context, racket.x - racket.width / 2., racket.y, racket.width, racket.height, racket.hBitmap);// ракетка игрока
-
-    if (ball.dy < 0 && (enemy.x - racket.width / 4 > ball.x || ball.x > enemy.x + racket.width / 4))
+    for (int x = 0; x < horizontalBlockCount; x++)
     {
-        //имитируем разумность оппонента. на самом деле, компьютер никогда не проигрывает, и мы не считаем попадает ли его ракетка по шарику
-        //вместо этого, мы всегда делаем отскок от потолка, а раектку противника двигаем - подставляем под шарик
-        //движение будет только если шарик летит вверх, и только если шарик по оси X выходит за пределы половины длины ракетки
-        //в этом случае, мы смешиваем координаты ракетки и шарика в пропорции 9 к 1
-        enemy.x = ball.x * .1 + enemy.x * .9;
+        for (int y = 0; y < verticalBlockCount; y++)
+        {
+            if (blocks[x][y].active) {
+                ShowBitmap(window.context, blocks[x][y].x, blocks[x][y].y, blocks[x][y].width, blocks[x][y].height, racket.hBitmap);
+            }
+        }
     }
-
-    ShowBitmap(window.context, enemy.x - racket.width / 2, 0, racket.width, racket.height, enemy.hBitmap);//ракетка оппонента
     ShowBitmap(window.context, ball.x - ball.rad, ball.y - ball.rad, 2 * ball.rad, 2 * ball.rad, ball.hBitmap, true);// шарик
 }
 
@@ -160,7 +179,7 @@ void CheckWalls()
 
 void CheckRoof()
 {
-    if (ball.y < ball.rad + racket.height)
+    if (ball.y < ball.rad)
     {
         ball.dy *= -1;
         ProcessSound("bounce.wav");
@@ -175,8 +194,7 @@ void CheckFloor()
     {
         if (!tail && ball.x >= racket.x - racket.width / 2. - ball.rad && ball.x <= racket.x + racket.width / 2. + ball.rad)//шарик отбит, и мы не в режиме обработки хвоста
         {
-            game.score++;//за каждое отбитие даем одно очко
-            ball.speed += 5. / game.score;//но увеличиваем сложность - прибавляем скорости шарику
+            ball.speed += 300. / fps / game.score * debugSpeed;//но увеличиваем сложность - прибавляем скорости шарику
             ball.dy *= -1;//отскок
             racket.width -= 10. / game.score;//дополнительно уменьшаем ширину ракетки - для сложности
             ProcessSound("bounce.wav");//играем звук отскока
@@ -198,12 +216,60 @@ void CheckFloor()
                     InitGame();//переинициализируем игру
                 }
 
-                ball.dy = (rand() % 65 + 35) / 100.;//задаем новый случайный вектор для шарика
-                ball.dx = -(1 - ball.dy);
+
+                ball.dy = -(rand() % 65 + 35) / 100.;//задаем новый случайный вектор для шарика
+                ball.dx = (rand() % 90 + 10) / 100. * pow(-1, rand());
                 ball.x = racket.x;//инициализируем координаты шарика - ставим его на ракетку
                 ball.y = racket.y - ball.rad;
                 game.action = false;//приостанавливаем игру, пока игрок не нажмет пробел
                 tail = false;
+            }
+        }
+    }
+}
+
+void CheckBlocks() // checking every block for a possible collision
+{
+    if (game.action)
+    {
+        float l, ldebug, ballxdebug, ballydebug, balldxdebug, balldydebug, x1debug, y1debug, debugDepth;
+        debugDepth = 50.;
+        l = sqrt(ball.dx * ball.dx * ball.speed * ball.speed + ball.dy * ball.dy * ball.speed * ball.speed); // vector length
+        ldebug = sqrt(ball.dx * ball.dx * ball.speed * ball.speed + ball.dy * ball.dy * ball.speed * ball.speed) * debugDepth;
+        for (int i = 0; i < l; i++) // iterating every possible ball position from 0 to l
+        {
+            // finding coords for each ball pos 
+            float x1 = ball.x + ball.dx * ball.speed / l * (float)i;
+            float y1 = ball.y + ball.dy * ball.speed / l * (float)i;
+
+            SetPixel(window.context, x1, y1, RGB(255, 0, 255)); // drawing each ball pos as a single pixel (which a ball technically is)
+
+            // iterating every
+            for (int x = 0; x < horizontalBlockCount; x++)
+            {
+                for (int y = 0; y < verticalBlockCount; y++)
+                {
+                    if (blocks[x][y].active) { // active block
+                        if (x1 > blocks[x][y].x && x1 < blocks[x][y].x + blocks[x][y].width && y1 > blocks[x][y].y && y1 < blocks[x][y].y + blocks[x][y].height)
+                        { // and checking if there is a collision with a ball
+                            if (min(x1 - blocks[x][y].x, blocks[x][y].x + blocks[x][y].width - x1) < min(y1 - blocks[x][y].y, blocks[x][y].y + blocks[x][y].height - y1))
+                            { // horizontal
+                                ball.dx *= -1;
+                                ball.x += 2.*(x1 - ball.x);
+                                ball.y = y1;
+                            }
+                            else
+                            { // or vertical
+                                ball.dy *= -1;
+                                ball.x = x1;
+                                ball.y += 2.*(y1 - ball.y);
+                            }
+
+                            blocks[x][y].active = false; // removing the block the ball collided with
+                            game.score++; // adding 1 score
+                        }
+                    }
+                }
             }
         }
     }
@@ -215,6 +281,7 @@ void ProcessRoom()
     CheckWalls();
     CheckRoof();
     CheckFloor();
+    CheckBlocks();
 }
 
 void ProcessBall()
@@ -262,15 +329,18 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     
     while (!GetAsyncKeyState(VK_ESCAPE))
     {
-        ShowRacketAndBall();//рисуем фон, ракетку и шарик
-        ShowScore();//рисуем очик и жизни
-        BitBlt(window.device_context, 0, 0, window.width, window.height, window.context, 0, 0, SRCCOPY);//копируем буфер в окно
-        Sleep(16);//ждем 16 милисекунд (1/количество кадров в секунду)
+        ShowRacketBallAndBlocks();//рисуем фон, ракетку и шарик
 
         ProcessInput();//опрос клавиатуры
         LimitRacket();//проверяем, чтобы ракетка не убежала за экран
-        ProcessBall();//перемещаем шарик
+
         ProcessRoom();//обрабатываем отскоки от стен и каретки, попадание шарика в картетку
+        ProcessBall();//перемещаем шарик
+
+        ShowScore();//рисуем очик и жизни
+        BitBlt(window.device_context, 0, 0, window.width, window.height, window.context, 0, 0, SRCCOPY);//копируем буфер в окно
+        Sleep(1000. / fps * debugSpeed);//ждем 16 милисекунд (1/количество кадров в секунду)
+
     }
 
 }

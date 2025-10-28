@@ -29,6 +29,92 @@ void InitWindow()
 
 }
 
+void DrawLine(int x0, int y0, int x1, int y1)
+{
+    int deltax = abs(x1 - x0);
+    int deltay = abs(y1 - y0);
+    int error = 0;
+    int deltaerr = (deltay + 1);
+    int dirx, diry;
+    if (deltax != 0)
+    {
+        dirx = (x1 - x0) / deltax;
+    }
+    else
+    {
+        dirx = 0;
+    }
+    if (deltay != 0)
+    {
+        diry = (y1 - y0) / deltay;
+    }
+    else
+    {
+        diry = 0;
+    }
+        
+    if (deltax > deltay)
+    {
+        int y = y0;
+        if (dirx > 0)
+        {
+            for (int x = x0; x < x1; x++)
+            {
+                SetPixel(window.context, x, y, RGB(255, 255, 255));
+                error += deltaerr;
+                if (error >= deltax + 1)
+                {
+                    y += diry;
+                    error -= deltax + 1;
+                }
+            }
+        }
+        else
+        {
+            for (int x = x0; x > x1; x--)
+            {
+                SetPixel(window.context, x, y, RGB(255, 255, 255));
+                error += deltaerr;
+                if (error >= deltax + 1)
+                {
+                    y += diry;
+                    error -= deltax + 1;
+                }
+            }
+        }
+    }
+    else
+    {
+        int x = x0;
+        if (diry > 0)
+        {
+            for (int y = y0; y < y1; y++)
+            {
+                SetPixel(window.context, x, y, RGB(255, 255, 255));
+                error += deltaerr;
+                if (error >= deltay + 1)
+                {
+                    x += dirx;
+                    error -= deltay + 1;
+                }
+            }
+        }
+        else
+        {
+            for (int y = y0; y > y1; y--)
+            {
+                SetPixel(window.context, x, y, RGB(255, 255, 255));
+                error += deltaerr;
+                if (error >= deltay + 1)
+                {
+                    x += dirx;
+                    error -= deltay + 1;
+                }
+            }
+        }
+    }
+}
+
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     _In_opt_ HINSTANCE hPrevInstance,
     _In_ LPWSTR    lpCmdLine,
@@ -36,14 +122,20 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 {
     const int fps = 60;
     InitWindow();//здесь инициализируем все что нужно для рисования в окне
-
     ShowCursor(NULL);
     
     while (!GetAsyncKeyState(VK_ESCAPE))
     {
         BitBlt(window.device_context, 0, 0, window.width, window.height, window.context, 0, 0, SRCCOPY);//копируем буфер в окно
+        DrawLine(960, 540, 1060, 640);
+        DrawLine(960, 540, 860, 640);
+        DrawLine(960, 540, 860, 440);
+        DrawLine(960, 540, 1060, 440);
+        DrawLine(960, 540, 1060, 540);
+        DrawLine(960, 540, 860, 540);
+        DrawLine(960, 540, 960, 440);
+        DrawLine(960, 540, 960, 640);
         Sleep(1000. / fps);//ждем 16 милисекунд (1/количество кадров в секунду)
-
     }
 
 }

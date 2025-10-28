@@ -29,7 +29,7 @@ void InitWindow()
 
 }
 
-void DrawLine(int x0, int y0, int x1, int y1)
+void DrawLine(int x0, int y0, int z0, int x1, int y1, int z1)
 {
     int deltax = abs(x1 - x0);
     int deltay = abs(y1 - y0);
@@ -127,14 +127,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     while (!GetAsyncKeyState(VK_ESCAPE))
     {
         BitBlt(window.device_context, 0, 0, window.width, window.height, window.context, 0, 0, SRCCOPY);//копируем буфер в окно
-        DrawLine(960, 540, 1060, 640);
-        DrawLine(960, 540, 860, 640);
-        DrawLine(960, 540, 860, 440);
-        DrawLine(960, 540, 1060, 440);
-        DrawLine(960, 540, 1060, 540);
-        DrawLine(960, 540, 860, 540);
-        DrawLine(960, 540, 960, 440);
-        DrawLine(960, 540, 960, 640);
+        DrawLine(860, 440, 0, 1060, 440, 0);
+        DrawLine(1060, 440, 0, 1060, 640, 0);
+        DrawLine(1060, 640, 0, 860, 640, 0);
+        DrawLine(860, 640, 0, 860, 440, 0);
         Sleep(1000. / fps);//ждем 16 милисекунд (1/количество кадров в секунду)
     }
 

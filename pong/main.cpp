@@ -93,7 +93,7 @@ void DrawLine(Vector2 A, Vector2 B, Vector3 color) // draws a line from point A(
     {
         diry = 0;
     }
-        
+
     if (deltax > deltay)
     {
         int deltaerr = (deltay + 1);
@@ -169,8 +169,8 @@ Vector3 RotateVector(Vector3 point, char axis, float angle) // rotates a point i
             {0, sin(angle), cos(angle)}
         };
         return Vector3(point.x * rotationMatrix[0][0] + point.y * rotationMatrix[1][0] + point.z * rotationMatrix[2][0],
-                       point.x * rotationMatrix[0][1] + point.y * rotationMatrix[1][1] + point.z * rotationMatrix[2][1],
-                       point.x * rotationMatrix[0][2] + point.y * rotationMatrix[1][2] + point.z * rotationMatrix[2][2]);
+            point.x * rotationMatrix[0][1] + point.y * rotationMatrix[1][1] + point.z * rotationMatrix[2][1],
+            point.x * rotationMatrix[0][2] + point.y * rotationMatrix[1][2] + point.z * rotationMatrix[2][2]);
     }
     else if (axis == 'y')
     {
@@ -181,8 +181,8 @@ Vector3 RotateVector(Vector3 point, char axis, float angle) // rotates a point i
             {-sin(angle), 0, cos(angle)}
         };
         return Vector3(point.x * rotationMatrix[0][0] + point.y * rotationMatrix[1][0] + point.z * rotationMatrix[2][0],
-                       point.x * rotationMatrix[0][1] + point.y * rotationMatrix[1][1] + point.z * rotationMatrix[2][1],
-                       point.x * rotationMatrix[0][2] + point.y * rotationMatrix[1][2] + point.z * rotationMatrix[2][2]);
+            point.x * rotationMatrix[0][1] + point.y * rotationMatrix[1][1] + point.z * rotationMatrix[2][1],
+            point.x * rotationMatrix[0][2] + point.y * rotationMatrix[1][2] + point.z * rotationMatrix[2][2]);
     }
     else if (axis == 'z')
     {
@@ -193,28 +193,28 @@ Vector3 RotateVector(Vector3 point, char axis, float angle) // rotates a point i
             {0, 0, 1}
         };
         return Vector3(point.x * rotationMatrix[0][0] + point.y * rotationMatrix[1][0] + point.z * rotationMatrix[2][0],
-                       point.x * rotationMatrix[0][1] + point.y * rotationMatrix[1][1] + point.z * rotationMatrix[2][1],
-                       point.x * rotationMatrix[0][2] + point.y * rotationMatrix[1][2] + point.z * rotationMatrix[2][2]);
+            point.x * rotationMatrix[0][1] + point.y * rotationMatrix[1][1] + point.z * rotationMatrix[2][1],
+            point.x * rotationMatrix[0][2] + point.y * rotationMatrix[1][2] + point.z * rotationMatrix[2][2]);
     }
 }
 
 const int dist = 200;
 Vector2 crd2scr(Vector3 O) // converts the point's coordinates in my coordinate system to the screen's one (Z doesn't do anything atm)
 {
-    return Vector2(window.width/2 + O.x*dist/(O.z+dist), window.height/2 - O.y*dist/(O.z+dist));
+    return Vector2(window.width / 2 + O.x * dist / (O.z + dist), window.height / 2 - O.y * dist / (O.z + dist));
 }
 
 class Rect // a rectangle which can be drawn on screen by using its draw() method
 {
-public:
     Vector3 vert1, vert2, vert3, vert4;
+public:
     Rect()
     {
         vert1 = Vector3(-window.width / 4, window.height / 4, 0);
         vert2 = Vector3(window.width / 4, window.height / 4, 0);
         vert3 = Vector3(window.width / 4, -window.height / 4, 0);
         vert4 = Vector3(-window.width / 4, -window.height / 4, 0);
-    } 
+    }
 
     Rect(Vector3 v1, Vector3 v2, Vector3 v3, Vector3 v4)
     {
@@ -243,6 +243,71 @@ public:
     }
 };
 
+class Cuboid // a cuboid which can be drawn on screen by using its draw() method
+{
+    Vector3 vert1, vert2, vert3, vert4, vert5, vert6, vert7, vert8;
+public:
+    Cuboid()
+    {
+        vert1 = Vector3(-window.width / 4, window.height / 4, window.height / 4);
+        vert2 = Vector3(window.width / 4, window.height / 4, window.height / 4);
+        vert3 = Vector3(window.width / 4, -window.height / 4, window.height / 4);
+        vert4 = Vector3(-window.width / 4, -window.height / 4, window.height / 4);
+        vert5 = Vector3(-window.width / 4, window.height / 4, -window.height / 4);
+        vert6 = Vector3(window.width / 4, window.height / 4, -window.height / 4);
+        vert7 = Vector3(window.width / 4, -window.height / 4, -window.height / 4);
+        vert8 = Vector3(-window.width / 4, -window.height / 4, -window.height / 4);
+    }
+
+    Cuboid(Vector3 v1, Vector3 v2, Vector3 v3, Vector3 v4, Vector3 v5, Vector3 v6, Vector3 v7, Vector3 v8)
+    {
+        vert1 = v1;
+        vert2 = v2;
+        vert3 = v3;
+        vert4 = v4;
+        vert5 = v5;
+        vert6 = v6;
+        vert7 = v7;
+        vert8 = v8;
+    }
+    void rotate(char axis, float angle)
+    {
+        vert1 = RotateVector(vert1, axis, angle);
+        vert2 = RotateVector(vert2, axis, angle);
+        vert3 = RotateVector(vert3, axis, angle);
+        vert4 = RotateVector(vert4, axis, angle);
+        vert5 = RotateVector(vert5, axis, angle);
+        vert6 = RotateVector(vert6, axis, angle);
+        vert7 = RotateVector(vert7, axis, angle);
+        vert8 = RotateVector(vert8, axis, angle);
+    }
+    void draw()
+    {
+        SetPixel(window.context, crd2scr(vert1).x, crd2scr(vert1).y, RGB(255, 0, 0));
+        SetPixel(window.context, crd2scr(vert2).x, crd2scr(vert2).y, RGB(0, 255, 0));
+        SetPixel(window.context, crd2scr(vert3).x, crd2scr(vert3).y, RGB(0, 0, 255));
+        SetPixel(window.context, crd2scr(vert4).x, crd2scr(vert4).y, RGB(255, 255, 255));
+        SetPixel(window.context, crd2scr(vert5).x, crd2scr(vert5).y, RGB(255, 255, 255));
+        SetPixel(window.context, crd2scr(vert6).x, crd2scr(vert6).y, RGB(0, 0, 255));
+        SetPixel(window.context, crd2scr(vert7).x, crd2scr(vert7).y, RGB(0, 255, 0));
+        SetPixel(window.context, crd2scr(vert8).x, crd2scr(vert8).y, RGB(255, 0, 0));
+        DrawLine(crd2scr(vert1), crd2scr(vert2), Vector3(255, 0, 0));
+        DrawLine(crd2scr(vert2), crd2scr(vert3), Vector3(0, 255, 0));
+        DrawLine(crd2scr(vert3), crd2scr(vert4), Vector3(0, 0, 255));
+        DrawLine(crd2scr(vert4), crd2scr(vert1), Vector3(255, 255, 255));
+
+        DrawLine(crd2scr(vert1), crd2scr(vert5), Vector3(255, 0, 0));
+        DrawLine(crd2scr(vert2), crd2scr(vert6), Vector3(0, 255, 0));
+        DrawLine(crd2scr(vert3), crd2scr(vert7), Vector3(0, 0, 255));
+        DrawLine(crd2scr(vert4), crd2scr(vert8), Vector3(255, 255, 255));
+
+        DrawLine(crd2scr(vert5), crd2scr(vert6), Vector3(255, 0, 0));
+        DrawLine(crd2scr(vert6), crd2scr(vert7), Vector3(0, 255, 0));
+        DrawLine(crd2scr(vert7), crd2scr(vert8), Vector3(0, 0, 255));
+        DrawLine(crd2scr(vert8), crd2scr(vert5), Vector3(255, 255, 255));
+    }
+};
+
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     _In_opt_ HINSTANCE hPrevInstance,
     _In_ LPWSTR    lpCmdLine,
@@ -259,11 +324,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         PatBlt(window.context, 0, 0, window.width, window.height, BLACKNESS);
         SetPixel(window.context, window.width / 2, window.height / 2, RGB(255, 255, 255));
 
-        Rect myRect(Vector3(-100, 100, 0), Vector3(100, 100, 0), Vector3(100, -100, 0), Vector3(-100, -100, 0));
-        //myRect.rotate('x', rotationAngle);
-        myRect.rotate('y', rotationAngle);
-        //myRect.rotate('z', rotationAngle);
-        myRect.draw();
+        Cuboid myCuboid(Vector3(-100, 100, 100), Vector3(100, 100, 100), Vector3(100, -100, 100), Vector3(-100, -100, 100), Vector3(-100, 100, -100), Vector3(100, 100, -100), Vector3(100, -100, -100), Vector3(-100, -100, -100));
+        //myCuboid.rotate('x', rotationAngle);
+        //myCuboid.rotate('y', rotationAngle);
+        myCuboid.rotate('z', rotationAngle);
+        myCuboid.draw();
 
         BitBlt(window.device_context, 0, 0, window.width, window.height, window.context, 0, 0, SRCCOPY);//копируем буфер в окно
         rotationAngle += pi / 180;

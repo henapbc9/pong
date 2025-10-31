@@ -527,9 +527,16 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
         Cuboid myCuboid(Vector3(-100, 100, 100), Vector3(100, 100, 100), Vector3(100, -100, 100), Vector3(-100, -100, 100), Vector3(-100, 100, -100), Vector3(100, 100, -100), Vector3(100, -100, -100), Vector3(-100, -100, -100));
         //myCuboid.rotate('x', rotationAngle);
-        myCuboid.rotate('y', rotationAngle);
+        //myCuboid.rotate('y', rotationAngle);
         //myCuboid.rotate('z', rotationAngle);
-        myCuboid.draw();
+        //myCuboid.draw();
+
+        //DrawTriangle(Vector2(100, 100), Vector2(100, 200), Vector2(100, 300), Vector3(255, 255, 255));
+        DrawTriangle(Vector2(200, 200), Vector2(300, 200), Vector2(400, 200), Vector3(255, 255, 255));
+        //DrawTriangle(Vector2(300, 300), Vector2(400, 400), Vector2(500, 500), Vector3(255, 255, 255));
+        //DrawTriangle(Vector2(400, 400), Vector2(400, 600), Vector2(700, 700), Vector3(255, 255, 255));
+
+        DrawLine(Vector2(500, 500), Vector2(500, 500), Vector3(255, 255, 255));
 
 
         BitBlt(window.device_context, 0, 0, window.width, window.height, window.context, 0, 0, SRCCOPY);//копируем буфер в окно

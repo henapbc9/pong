@@ -248,9 +248,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     Rect myRect;
     while (!GetAsyncKeyState(VK_ESCAPE))
     {
-        BitBlt(window.device_context, 0, 0, window.width, window.height, window.context, 0, 0, SRCCOPY);//копируем буфер в окно
         myRect.draw();
         myRect.rotate('z', pi / 6);
+
+        BitBlt(window.device_context, 0, 0, window.width, window.height, window.context, 0, 0, SRCCOPY);//копируем буфер в окно
         Sleep(1000. / fps);//ждем 16 милисекунд (1/количество кадров в секунду)
     }
 }

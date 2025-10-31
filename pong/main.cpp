@@ -162,7 +162,7 @@ void DrawLine(Vector2 A, Vector2 B, Vector3 color) // draws a line from point A(
 void DrawTriangle(Vector2 vert1, Vector2 vert2, Vector2 vert3, Vector3 color)
 {
     Vector2 A, B, C;
-    if (vert1.y <= vert2.y && vert1.y <= vert3.y)
+    if (vert1.y < vert2.y && vert1.y < vert3.y)
     {
         A = vert1;
         if (vert3.y < vert2.y)
@@ -176,7 +176,7 @@ void DrawTriangle(Vector2 vert1, Vector2 vert2, Vector2 vert3, Vector3 color)
             C = vert3;
         }
     }
-    else if (vert2.y <= vert1.y && vert2.y <= vert3.y)
+    else if (vert2.y < vert1.y && vert2.y < vert3.y)
     {
         A = vert2;
         if (vert3.y < vert1.y)
@@ -190,7 +190,7 @@ void DrawTriangle(Vector2 vert1, Vector2 vert2, Vector2 vert3, Vector3 color)
             C = vert3;
         }
     }
-    else if (vert3.y <= vert1.y && vert3.y <= vert2.y)
+    else if (vert3.y < vert1.y && vert3.y < vert2.y)
     {
         A = vert3;
         if (vert1.y < vert2.y)
@@ -204,30 +204,20 @@ void DrawTriangle(Vector2 vert1, Vector2 vert2, Vector2 vert3, Vector3 color)
             C = vert1;
         }
     }
+    else
+    {
+        A = vert1;
+        B = vert2;
+        C = vert3;
+    }
 
     for (int y = A.y; y <= C.y; y++)
     {
-
-        int x1, x2;
-        if (A.y != C.y)
-        {
-            x1 = A.x + (y - A.y) * (C.x - A.x) / (C.y - A.y);
-        }
-        else
-        {
-            x1 = A.x;
-        }
-        
+        int x1 = A.x + (y - A.y) * (C.x - A.x) / (C.y - A.y);
+        int x2;
         if (y < B.y)
         {
-            if (A.y != B.y)
-            {
-                x2 = A.x + (y - A.y) * (B.x - A.x) / (B.y - A.y);
-            }
-            else
-            {
-                x2 = A.x;
-            }
+            x2 = A.x + (y - A.y) * (B.x - A.x) / (B.y - A.y);
         }
         else
         {
@@ -247,18 +237,7 @@ void DrawTriangle(Vector2 vert1, Vector2 vert2, Vector2 vert3, Vector3 color)
                 x2 = B.x + (y - B.y) * (C.x - B.x) / (C.y - B.y);
             }
         }
-        if (x1 > x2)
-        {
-            int tmp = x1;
-            x1 = x2;
-            x2 = tmp;
-        }
-        //SetPixel(window.context, x1, y, RGB(color.x, color.y, color.z));
-        //SetPixel(window.context, x2, y, RGB(color.x, color.y, color.z));
-        for (int x = x1; x < x2; x++)
-        {
-            SetPixel(window.context, x, y, RGB(color.x, color.y, color.z));
-        }
+        DrawLine(Vector2(x1, y), Vector2(x2, y), color);
     }
 }
 
@@ -389,17 +368,14 @@ public:
     }
     void draw()
     {
-        //SetPixel(window.context, crd2scr(vert1).x, crd2scr(vert1).y, RGB(255, 0, 0));
-        //SetPixel(window.context, crd2scr(vert2).x, crd2scr(vert2).y, RGB(0, 255, 0));
-        //SetPixel(window.context, crd2scr(vert3).x, crd2scr(vert3).y, RGB(0, 0, 255));
-        //SetPixel(window.context, crd2scr(vert4).x, crd2scr(vert4).y, RGB(255, 255, 255));
-
-        //SetPixel(window.context, crd2scr(vert5).x, crd2scr(vert5).y, RGB(255, 255, 255));
-        //SetPixel(window.context, crd2scr(vert6).x, crd2scr(vert6).y, RGB(0, 0, 255));
-        //SetPixel(window.context, crd2scr(vert7).x, crd2scr(vert7).y, RGB(0, 255, 0));
-        //SetPixel(window.context, crd2scr(vert8).x, crd2scr(vert8).y, RGB(255, 0, 0));
-
-        /*
+        SetPixel(window.context, crd2scr(vert1).x, crd2scr(vert1).y, RGB(255, 0, 0));
+        SetPixel(window.context, crd2scr(vert2).x, crd2scr(vert2).y, RGB(0, 255, 0));
+        SetPixel(window.context, crd2scr(vert3).x, crd2scr(vert3).y, RGB(0, 0, 255));
+        SetPixel(window.context, crd2scr(vert4).x, crd2scr(vert4).y, RGB(255, 255, 255));
+        SetPixel(window.context, crd2scr(vert5).x, crd2scr(vert5).y, RGB(255, 255, 255));
+        SetPixel(window.context, crd2scr(vert6).x, crd2scr(vert6).y, RGB(0, 0, 255));
+        SetPixel(window.context, crd2scr(vert7).x, crd2scr(vert7).y, RGB(0, 255, 0));
+        SetPixel(window.context, crd2scr(vert8).x, crd2scr(vert8).y, RGB(255, 0, 0));
         DrawLine(crd2scr(vert1), crd2scr(vert2), Vector3(255, 0, 0));
         DrawLine(crd2scr(vert2), crd2scr(vert3), Vector3(0, 255, 0));
         DrawLine(crd2scr(vert3), crd2scr(vert4), Vector3(0, 0, 255));
@@ -414,27 +390,6 @@ public:
         DrawLine(crd2scr(vert6), crd2scr(vert7), Vector3(0, 255, 0));
         DrawLine(crd2scr(vert7), crd2scr(vert8), Vector3(0, 0, 255));
         DrawLine(crd2scr(vert8), crd2scr(vert5), Vector3(255, 255, 255));
-        */
-
-        
-        DrawTriangle(crd2scr(vert1), crd2scr(vert2), crd2scr(vert3), Vector3(255, 0, 0));
-        DrawTriangle(crd2scr(vert1), crd2scr(vert4), crd2scr(vert3), Vector3(0, 255, 0));
-
-        DrawTriangle(crd2scr(vert5), crd2scr(vert6), crd2scr(vert7), Vector3(255, 0, 0));
-        DrawTriangle(crd2scr(vert5), crd2scr(vert8), crd2scr(vert7), Vector3(0, 0, 255));
-
-        DrawTriangle(crd2scr(vert1), crd2scr(vert2), crd2scr(vert6), Vector3(255, 0, 0));
-        DrawTriangle(crd2scr(vert1), crd2scr(vert5), crd2scr(vert6), Vector3(255, 0, 0));
-
-        DrawTriangle(crd2scr(vert4), crd2scr(vert3), crd2scr(vert7), Vector3(0, 0, 255));
-        DrawTriangle(crd2scr(vert4), crd2scr(vert8), crd2scr(vert7), Vector3(0, 0, 255));
-
-        DrawTriangle(crd2scr(vert1), crd2scr(vert5), crd2scr(vert8), Vector3(255, 255, 255));
-        DrawTriangle(crd2scr(vert1), crd2scr(vert4), crd2scr(vert8), Vector3(255, 255, 255));
-
-        DrawTriangle(crd2scr(vert2), crd2scr(vert6), crd2scr(vert7), Vector3(0, 255, 0));
-        DrawTriangle(crd2scr(vert2), crd2scr(vert3), crd2scr(vert7), Vector3(0, 255, 0));
-        
     }
 };
 
@@ -443,7 +398,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     _In_ LPWSTR    lpCmdLine,
     _In_ int       nCmdShow)
 {
-    const int fps = 60;
+    const int fps = 120;
     int totalFrames = 0;
     InitWindow();//здесь инициализируем все что нужно для рисования в окне
     ShowCursor(NULL);
@@ -454,11 +409,18 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         PatBlt(window.context, 0, 0, window.width, window.height, BLACKNESS);
         SetPixel(window.context, window.width / 2, window.height / 2, RGB(255, 255, 255));
 
-        Cuboid myCuboid(Vector3(-100, 100, 100), Vector3(100, 100, 100), Vector3(100, -100, 100), Vector3(-100, -100, 100), Vector3(-100, 100, -100), Vector3(100, 100, -100), Vector3(100, -100, -100), Vector3(-100, -100, -100));
+        //Cuboid myCuboid(Vector3(-100, 100, 100), Vector3(100, 100, 100), Vector3(100, -100, 100), Vector3(-100, -100, 100), Vector3(-100, 100, -100), Vector3(100, 100, -100), Vector3(100, -100, -100), Vector3(-100, -100, -100));
         //myCuboid.rotate('x', rotationAngle);
-        myCuboid.rotate('y', rotationAngle);
+        //myCuboid.rotate('y', rotationAngle);
         //myCuboid.rotate('z', rotationAngle);
-        myCuboid.draw();
+        //myCuboid.draw();
+
+        //DrawTriangle(Vector2(100, 100), Vector2(100, 200), Vector2(100, 300), Vector3(255, 255, 255));
+        DrawTriangle(Vector2(200, 200), Vector2(300, 200), Vector2(400, 200), Vector3(255, 255, 255));
+        //DrawTriangle(Vector2(300, 300), Vector2(400, 400), Vector2(500, 500), Vector3(255, 255, 255));
+        //DrawTriangle(Vector2(400, 400), Vector2(400, 600), Vector2(700, 700), Vector3(255, 255, 255));
+
+        DrawLine(Vector2(500, 500), Vector2(500, 500), Vector3(255, 255, 255));
 
         BitBlt(window.device_context, 0, 0, window.width, window.height, window.context, 0, 0, SRCCOPY);//копируем буфер в окно
         rotationAngle += pi / 180;

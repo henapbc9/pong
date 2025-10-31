@@ -75,7 +75,6 @@ void DrawLine(Vector2 A, Vector2 B, Vector3 color) // draws a line from point A(
     int y1 = B.y;
     int deltax = abs(x1 - x0);
     int deltay = abs(y1 - y0);
-    int error = 0;
     int dirx, diry;
     if (deltax != 0)
     {
@@ -96,11 +95,12 @@ void DrawLine(Vector2 A, Vector2 B, Vector3 color) // draws a line from point A(
 
     if (deltax > deltay)
     {
+        int error = 0;
         int deltaerr = (deltay + 1);
         int y = y0;
         if (dirx > 0)
         {
-            for (int x = x0; x < x1; x++)
+            for (int x = x0; x <= x1; x++)
             {
                 SetPixel(window.context, x, y, RGB(color.x, color.y, color.z));
                 error += deltaerr;
@@ -113,7 +113,7 @@ void DrawLine(Vector2 A, Vector2 B, Vector3 color) // draws a line from point A(
         }
         else
         {
-            for (int x = x0; x > x1; x--)
+            for (int x = x0; x >= x1; x--)
             {
                 SetPixel(window.context, x, y, RGB(color.x, color.y, color.z));
                 error += deltaerr;
@@ -127,11 +127,12 @@ void DrawLine(Vector2 A, Vector2 B, Vector3 color) // draws a line from point A(
     }
     else
     {
+        int error = 0;
         int deltaerr = (deltax + 1);
         int x = x0;
         if (diry > 0)
         {
-            for (int y = y0; y < y1; y++)
+            for (int y = y0; y <= y1; y++)
             {
                 SetPixel(window.context, x, y, RGB(color.x, color.y, color.z));
                 error += deltaerr;
@@ -144,7 +145,7 @@ void DrawLine(Vector2 A, Vector2 B, Vector3 color) // draws a line from point A(
         }
         else
         {
-            for (int y = y0; y > y1; y--)
+            for (int y = y0; y >= y1; y--)
             {
                 SetPixel(window.context, x, y, RGB(color.x, color.y, color.z));
                 error += deltaerr;
@@ -155,6 +156,88 @@ void DrawLine(Vector2 A, Vector2 B, Vector3 color) // draws a line from point A(
                 }
             }
         }
+    }
+}
+
+void DrawTriangle(Vector2 vert1, Vector2 vert2, Vector2 vert3, Vector3 color)
+{
+    Vector2 A, B, C;
+    if (vert1.y < vert2.y && vert1.y < vert3.y)
+    {
+        A = vert1;
+        if (vert3.y < vert2.y)
+        {
+            B = vert3;
+            C = vert2;
+        }
+        else
+        {
+            B = vert2;
+            C = vert3;
+        }
+    }
+    else if (vert2.y < vert1.y && vert2.y < vert3.y)
+    {
+        A = vert2;
+        if (vert3.y < vert1.y)
+        {
+            B = vert3;
+            C = vert1;
+        }
+        else
+        {
+            B = vert1;
+            C = vert3;
+        }
+    }
+    else if (vert3.y < vert1.y && vert3.y < vert2.y)
+    {
+        A = vert3;
+        if (vert1.y < vert2.y)
+        {
+            B = vert1;
+            C = vert2;
+        }
+        else
+        {
+            B = vert2;
+            C = vert1;
+        }
+    }
+    else
+    {
+        A = vert1;
+        B = vert2;
+        C = vert3;
+    }
+
+    for (int y = A.y; y <= C.y; y++)
+    {
+        int x1 = A.x + (y - A.y) * (C.x - A.x) / (C.y - A.y);
+        int x2;
+        if (y < B.y)
+        {
+            x2 = A.x + (y - A.y) * (B.x - A.x) / (B.y - A.y);
+        }
+        else
+        {
+            if (C.y == B.y)
+            {
+                if (B.x > C.x)
+                {
+                    x2 = B.x;
+                }
+                else
+                {
+                    x2 = C.x;
+                }
+            }
+            else
+            {
+                x2 = B.x + (y - B.y) * (C.x - B.x) / (C.y - B.y);
+            }
+        }
+        DrawLine(Vector2(x1, y), Vector2(x2, y), color);
     }
 }
 
@@ -203,6 +286,8 @@ Vector2 crd2scr(Vector3 O) // converts the point's coordinates in my coordinate 
 {
     return Vector2(window.width / 2 + O.x * dist / (O.z + dist), window.height / 2 - O.y * dist / (O.z + dist));
 }
+
+
 
 class Rect // a rectangle which can be drawn on screen by using its draw() method
 {
@@ -313,7 +398,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     _In_ LPWSTR    lpCmdLine,
     _In_ int       nCmdShow)
 {
-    const int fps = 30;
+    const int fps = 120;
     int totalFrames = 0;
     InitWindow();//здесь инициализируем все что нужно для рисования в окне
     ShowCursor(NULL);
@@ -324,14 +409,22 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         PatBlt(window.context, 0, 0, window.width, window.height, BLACKNESS);
         SetPixel(window.context, window.width / 2, window.height / 2, RGB(255, 255, 255));
 
-        Cuboid myCuboid(Vector3(-100, 100, 100), Vector3(100, 100, 100), Vector3(100, -100, 100), Vector3(-100, -100, 100), Vector3(-100, 100, -100), Vector3(100, 100, -100), Vector3(100, -100, -100), Vector3(-100, -100, -100));
+        //Cuboid myCuboid(Vector3(-100, 100, 100), Vector3(100, 100, 100), Vector3(100, -100, 100), Vector3(-100, -100, 100), Vector3(-100, 100, -100), Vector3(100, 100, -100), Vector3(100, -100, -100), Vector3(-100, -100, -100));
         //myCuboid.rotate('x', rotationAngle);
         //myCuboid.rotate('y', rotationAngle);
-        myCuboid.rotate('z', rotationAngle);
-        myCuboid.draw();
+        //myCuboid.rotate('z', rotationAngle);
+        //myCuboid.draw();
+
+        //DrawTriangle(Vector2(100, 100), Vector2(100, 200), Vector2(100, 300), Vector3(255, 255, 255));
+        DrawTriangle(Vector2(200, 200), Vector2(300, 200), Vector2(400, 200), Vector3(255, 255, 255));
+        //DrawTriangle(Vector2(300, 300), Vector2(400, 400), Vector2(500, 500), Vector3(255, 255, 255));
+        //DrawTriangle(Vector2(400, 400), Vector2(400, 600), Vector2(700, 700), Vector3(255, 255, 255));
+
+        DrawLine(Vector2(500, 500), Vector2(500, 500), Vector3(255, 255, 255));
 
         BitBlt(window.device_context, 0, 0, window.width, window.height, window.context, 0, 0, SRCCOPY);//копируем буфер в окно
         rotationAngle += pi / 180;
+        if (rotationAngle > 2 * pi) rotationAngle -= 2 * pi;
         totalFrames += 1;
         Sleep(1000. / fps);//ждем 16 милисекунд (1/количество кадров в секунду)
     }

@@ -76,7 +76,6 @@ void DrawLine(Vector2 A, Vector2 B, Vector3 color) // draws a line from point A(
     int deltax = abs(x1 - x0);
     int deltay = abs(y1 - y0);
     int error = 0;
-    int deltaerr = (deltay + 1);
     int dirx, diry;
     if (deltax != 0)
     {
@@ -97,6 +96,7 @@ void DrawLine(Vector2 A, Vector2 B, Vector3 color) // draws a line from point A(
         
     if (deltax > deltay)
     {
+        int deltaerr = (deltay + 1);
         int y = y0;
         if (dirx > 0)
         {
@@ -127,6 +127,7 @@ void DrawLine(Vector2 A, Vector2 B, Vector3 color) // draws a line from point A(
     }
     else
     {
+        int deltaerr = (deltax + 1);
         int x = x0;
         if (diry > 0)
         {
@@ -199,7 +200,7 @@ Vector3 RotateVector(Vector3 point, char axis, float angle) // rotates a point i
 
 Vector2 crd2scr(Vector3 O) // converts the point's coordinates in my coordinate system to the screen's one (Z doesn't do anything atm)
 {
-    return Vector2(O.x + 960, -O.y + 540);
+    return Vector2(O.x + window.width / 2, -O.y + window.height / 2);
 }
 
 class Rect // a rectangle which can be drawn on screen by using its draw() method
@@ -230,9 +231,13 @@ public:
     }
     void draw()
     {
-        DrawLine(crd2scr(vert1), crd2scr(vert2), Vector3(255, 255, 255));
-        DrawLine(crd2scr(vert2), crd2scr(vert3), Vector3(255, 255, 255));
-        DrawLine(crd2scr(vert3), crd2scr(vert4), Vector3(255, 255, 255));
+        SetPixel(window.context, crd2scr(vert1).x, crd2scr(vert1).y, RGB(255, 0, 0));
+        SetPixel(window.context, crd2scr(vert2).x, crd2scr(vert2).y, RGB(0, 255, 0));
+        SetPixel(window.context, crd2scr(vert3).x, crd2scr(vert3).y, RGB(0, 0, 255));
+        SetPixel(window.context, crd2scr(vert4).x, crd2scr(vert4).y, RGB(255, 255, 255));
+        DrawLine(crd2scr(vert1), crd2scr(vert2), Vector3(255, 0, 0));
+        DrawLine(crd2scr(vert2), crd2scr(vert3), Vector3(0, 255, 0));
+        DrawLine(crd2scr(vert3), crd2scr(vert4), Vector3(0, 0, 255));
         DrawLine(crd2scr(vert4), crd2scr(vert1), Vector3(255, 255, 255));
     }
 };
@@ -242,16 +247,26 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     _In_ LPWSTR    lpCmdLine,
     _In_ int       nCmdShow)
 {
-    const int fps = 2;
+    const int fps = 30;
+    int totalFrames = 0;
     InitWindow();//здесь инициализируем все что нужно для рисования в окне
     ShowCursor(NULL);
-    Rect myRect;
+    float rotationAngle = 0;
+
     while (!GetAsyncKeyState(VK_ESCAPE))
     {
+        PatBlt(window.context, 0, 0, window.width, window.height, BLACKNESS);
+        SetPixel(window.context, window.width / 2, window.height / 2, RGB(255, 255, 255));
+
+        Rect myRect(Vector3(-100, 100, 0), Vector3(100, 100, 0), Vector3(100, -100, 0), Vector3(-100, -100, 0));
+        myRect.rotate('x', rotationAngle);
+        myRect.rotate('y', rotationAngle);
+        //myRect.rotate('z', rotationAngle);
         myRect.draw();
-        myRect.rotate('z', pi / 6);
 
         BitBlt(window.device_context, 0, 0, window.width, window.height, window.context, 0, 0, SRCCOPY);//копируем буфер в окно
+        rotationAngle += pi / 180;
+        totalFrames += 1;
         Sleep(1000. / fps);//ждем 16 милисекунд (1/количество кадров в секунду)
     }
 }

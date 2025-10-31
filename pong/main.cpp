@@ -198,9 +198,10 @@ Vector3 RotateVector(Vector3 point, char axis, float angle) // rotates a point i
     }
 }
 
+const int dist = 200;
 Vector2 crd2scr(Vector3 O) // converts the point's coordinates in my coordinate system to the screen's one (Z doesn't do anything atm)
 {
-    return Vector2(O.x + window.width / 2, -O.y + window.height / 2);
+    return Vector2(window.width/2 + O.x*dist/(O.z+dist), window.height/2 - O.y*dist/(O.z+dist));
 }
 
 class Rect // a rectangle which can be drawn on screen by using its draw() method
@@ -259,7 +260,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         SetPixel(window.context, window.width / 2, window.height / 2, RGB(255, 255, 255));
 
         Rect myRect(Vector3(-100, 100, 0), Vector3(100, 100, 0), Vector3(100, -100, 0), Vector3(-100, -100, 0));
-        myRect.rotate('x', rotationAngle);
+        //myRect.rotate('x', rotationAngle);
         myRect.rotate('y', rotationAngle);
         //myRect.rotate('z', rotationAngle);
         myRect.draw();
